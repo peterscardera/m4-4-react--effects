@@ -121,11 +121,13 @@ You _definitely_ don't want to do this in every render
 const App = () => {
   const [cart, setCart] = React.useState({});
 
-  fetch('some-url')
-    .then(data => {
-      console.log('Got data:', data);
-      setCart(data);
-    })
+
+//REMOVE BELOW
+  // fetch('some-url')
+  //   .then(data => {
+  //     console.log('Got data:', data);
+  //     setCart(data);
+  //   })
 
   React.useEffect(() => {
       fetch('some-url')
@@ -157,24 +159,39 @@ Update the following snippets to make use of `useEffect`
 const App = () => {
   const [count, setCount] = React.useState(0);
 
-  document.title = `You have clicked ${count} times`;
+React.useEffect(()=> {
+ document.title = `You have clicked ${count} times`;
+}, [count]) // weere watching the count variable
+ 
 
   return (
     <button onClick={() => setCount(count + 1)}>
       Increment
     </button>
   );
+
+
+
 }
 ```
 
 ---
 
 ```js
+
 const App = ({ color }) => {
   const [value, setValue] = React.useState(false);
 
+
+  React.useEffect(()=> {
   window.localStorage.setItem('value', value);
+  }[value])
+
+
+  React.useEffect(()=> {
   window.localStorage.setItem('color', color);
+  }[color])
+
 
   return (
     <div>
@@ -187,15 +204,28 @@ const App = ({ color }) => {
 }
 ```
 
----
+--- if its ever re-render the use effect wont be re fired
 
+1-generate the modal and adds an event listener 2-as soon as someone hits the event key it closes it
 ```js
+
 const Modal = ({ handleClose }) => {
+  
+  
+React.useEffect(()=> {
+    
+
   window.addEventListener('keydown', (ev) => {
     if (ev.code === 'Escape') {
       handleClose();
     }
-  });
+  }[]); //empty array as it not watching anything . does whats in the use effect ONCE as its an empty array ***
+
+
+})
+
+
+
 
   return (
     <div>
@@ -203,6 +233,7 @@ const Modal = ({ handleClose }) => {
     </div>
   );
 }
+
 ```
 
 ---
@@ -238,7 +269,7 @@ It also has a link to the other route.
 ```js
 const Home = () => {
   React.useEffect(() => {
-    window.addEventListener('scroll', func());
+    window.addEventListener('scroll', func()); //event still exist so its good to remove the event listener and we have to do the same with the 
   }, []);
 
   return (
@@ -266,9 +297,9 @@ The scroll handler _doesn't go away_ just because we changed components.
 ```js
 const Home = () => {
   React.useEffect(() => {
-    window.addEventListener('scroll', aFunc());
+    window.addEventListener('scroll', aFunc()); 
 
-    return () => {
+    return () => { //this return of a function is used to cleanup. Just before it dies the function returns this
       window.removeEventListener('scroll', aFunc());
     }
   }, []);
@@ -277,8 +308,7 @@ const Home = () => {
 
 ---
 
-Unsubscribes are processed **right before** the next update, and **right before** removal.
-
+Unsubscribes are processed **right before** the next update, and **right before** removal. **
 ---
 
 import updateASrc from './assets/update-A.svg';
@@ -314,26 +344,46 @@ Make sure to do the appropriate cleanup work
 ```js
 // seTimeout is similar to setInterval...
 const App = () => {
-  React.useEffect(() => {
-    window.setTimeout(() => {
-      console.log('1 second after update!')
-    });
-  }, [])
 
-  return null;
+React.useEffect(() => {
+ 
+ const timerTofu = window.setTimeout((time)=> {
+ console.log('1 second after update!')
+}, 1000);
+
+return () =>  { //this return is returning a function to clear 
+  clearInterval(timerTofu)
 }
+
+}, [])
+
+return null 
+}
+
+
 ```
 
 ---
 
 ```js
 const App = () => {
+
+
+const handlePress = (ev) => {
+  console.log("you pressed" +ev.code)
+}
+
   React.useEffect(() => {
     window.addEventListener('keydown', (ev) => {
-      console.log('You pressed: ' + ev.code);
-    })
+      
+ return () => { //cleaning up at the end
+    remove window.removeEventListener('keydown, handlePress) 
+  }
+
+    
   }, [])
 
+ 
   return null;
 }
 ```
@@ -372,7 +422,7 @@ Tracking mouse position
 <div class="row">
 <div class="col">
 
-```js
+```js 
 const App = ({ path }) => {
   const [mousePosition, setMousePosition] = React.useState({
     x: null,
@@ -401,6 +451,15 @@ const App = ({ path }) => {
 </div>
 <div class='col'>
 
+//// SINCE THIS WOULD BE IN ONE COMPONANT AND IF WE WANT TO USE IT IN ANOTHER COMPONANT WE WOULD HAVE TO WRITE THE ABOVE HOOK ALL OVER BUT IF WE CREATE IT 
+AS A CUSTOM HOOK IE: AND IN OUR CUSTOME HOOK  WE WOULD HAVE REACT HOOKS. We would need at least 1 react hook in our custom hook
+
+cont useMousePad = () => {
+   const [mousePosition, setMousePosition] = React.useState({
+    x: null,
+    y: null
+  });
+}
 ```js
 // refactoring time...
 
@@ -417,22 +476,34 @@ Extract a custom hook
 ---
 
 ```js
-const App = ({ path }) => {
-  const [data, setData] = React.useState(null);
 
-  React.useEffect(() => {
-    fetch(path)
-      .then(res => res.json())
-      .then(json => {
-        setData(json);
-      })
-  }, [path])
 
-  return (
-    <span>
-      Data: {JSON.stringify(data)}
-    </span>
-  );
+const useMyCustomHook = (path) => {
+
+ const [data, setData] = React.useState(null)
+
+ React.useEffect(() => {  //async by nature as it has to happen at a specific time
+      fetch(path) //
+        .then(res => res.json())
+        .then(json => {
+          setData(json);
+          
+        })
+    }, [path]) //when this path changes this use effect will be runned
+
+
+return data
+
+  const App = ({ path }) => {
+ 
+const data = useData(path)
+
+    return (
+      <span>
+        Data: {JSON.stringify(data)}
+      </span>
+    );
+  }
 }
 ```
 
@@ -449,7 +520,7 @@ const Time = ({ throttleDuration }) => {
       setTime(new Date());
     }, throttleDuration);
 
-    return () => {
+  return () => {
       window.clearInterval(intervalId);
     }
   }, [throttleDuration])

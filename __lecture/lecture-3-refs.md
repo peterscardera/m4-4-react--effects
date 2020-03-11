@@ -3,7 +3,7 @@
 ---
 
 Let's say you want to focus an input when the component mounts.
-
+as soon as screen load curser is in the input 
 ---
 
 One way to do this:
@@ -13,7 +13,7 @@ const Form = () => {
   React.useEffect(() => {
     const firstNameInput = document.querySelector('#first-name');
 
-    firstNameInput.focus();
+    firstNameInput.focus(); //give it focus with vanilla JS this isnt the best as its harder to maintain we are by passing React.
   }, []);
 
   return (
@@ -50,7 +50,8 @@ React offers another way: `useRef`
 
 ```js live=true
 const Form = () => {
-  const firstNameRef = React.useRef(null);
+  const firstNameRef = React.useRef(null); //default variable set to null inside the DOM i pass it a REF attribute //THIS CREATES AN OBJECT WITH
+  //A KEY OF CURRENT AND A VALUE OF < input />
 
   React.useEffect(() => {
     firstNameRef.current.focus();
@@ -92,22 +93,31 @@ What are some things you notice about this code?
 
 # Exercises
 
-Use `useRef`
+Use `useRef` (TAGET SPECIFIC NODES)
 
 ---
 
 ```js
+
+//on render the button will be on focus bellow :
+
+
 const ConfirmButton = () => {
+
+/const btn = React.useRef(null);/ //ADDED
+
   React.useEffect(() => {
-    const btn = document.getElementById('confirm-button');
+    //const btn = document.getElementById('confirm-button'); REMOVED
 
     if (btn) {
-      btn.focus();
+      btn./current/.focus(); //added CURRENT 
     }
   }, []);
 
-  return <button id="confirm-button">Confirm</button>;
+  return <button /ref={btn}/ id="confirm-button">Confirm</button>; //added /ref={btn}/
 };
+
+
 ```
 
 ---

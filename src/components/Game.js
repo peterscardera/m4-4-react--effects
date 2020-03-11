@@ -1,39 +1,106 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { useEffect } from "react";
+import styled from "styled-components";
+import Item from "./Item";
+import useInterval from "../hooks/use-interval.hook";
 
-import cookieSrc from '../cookie.svg';
+import cookieSrc from "../cookie.svg";
 
 const items = [
-  { id: 'cursor', name: 'Cursor', cost: 10, value: 1 },
-  { id: 'grandma', name: 'Grandma', cost: 100, value: 10 },
-  { id: 'farm', name: 'Farm', cost: 1000, value: 80 },
+  { id: "cursor", name: "Cursor", cost: 10, value: 1 },
+  { id: "grandma", name: "Grandma", cost: 100, value: 10 },
+  { id: "farm", name: "Farm", cost: 1000, value: 80 }
 ];
 
 const Game = () => {
-  // TODO: Replace this with React state!
-  const numCookies = 100;
-  const purchasedItems = {
+  const [numCookies, setNumCookies] = React.useState(100);
+  const [purchasedItems, setPurchasedItems] = React.useState({
     cursor: 0,
     grandma: 0,
-    farm: 0,
+    farm: 0
+  });
+  const handleSpace = () => {
+     setNumCookies(numCookies);
   };
+
+  React.useEffect(() => {
+    document.title = `${numCookies} cookies`;
+
+    return () => {
+      document.title = `cookies`;
+    };
+  }, [numCookies]);
+
+  React.useEffect(() => {
+    window.addEventListener("Space", handleSpace);
+
+    return () => {
+      window.removeEventListener("Space", handleSpace);
+    };
+  });
+  const calculateCookiesPerTick = purchasedItems => {
+    //console.log(purchasedItems);
+
+    let cookieFactory = 0;
+
+    items.forEach(item => {
+      cookieFactory += purchasedItems[item.id] * item.value;
+    });
+
+    return cookieFactory;
+  };
+  //---------------INTERVAL HOOK---------------//
+  useInterval(() => {
+    const numOfGeneratedCookies = calculateCookiesPerTick(purchasedItems);
+
+    return setNumCookies(numOfGeneratedCookies + numCookies);
+
+    // Add this number of cookies to the total
+  }, 1000);
+  //---------------------------------------------
 
   return (
     <Wrapper>
       <GameArea>
         <Indicator>
           <Total>{numCookies} cookies</Total>
-          {/* TODO: Calcuate the cookies per second and show it here: */}
-          <strong>0</strong> cookies per second
+          {/*WHY NOT THE VARIABLE numOfGeneratedCookies*/}
+          <strong>{calculateCookiesPerTick(purchasedItems)}</strong> cookies per
+          second
         </Indicator>
-        <Button>
+        <Button
+          onClick={() => {
+            setNumCookies(numCookies + 100);
+          }}
+        >
           <Cookie src={cookieSrc} />
         </Button>
       </GameArea>
 
       <ItemArea>
         <SectionTitle>Items:</SectionTitle>
-        {/* TODO: Add <Item> instances here, 1 for each item type. */}
+        {items.map((eachItem, i) => {
+          return (
+            <Item
+              key={i}
+              name={eachItem.name}
+              cost={eachItem.cost}
+              value={eachItem.value}
+              numOwned={purchasedItems[eachItem.id]}
+              handlerOfBuys={() => {
+                if (numCookies < eachItem.cost) {
+                  alert("Cannot afford item");
+                  return;
+                } else {
+                  setNumCookies(numCookies - eachItem.cost);
+                  setPurchasedItems({
+                    ...purchasedItems,
+                    [eachItem.id]: purchasedItems[eachItem.id] + 1
+                  });
+                }
+              }}
+            />
+          );
+        })}
       </ItemArea>
     </Wrapper>
   );
