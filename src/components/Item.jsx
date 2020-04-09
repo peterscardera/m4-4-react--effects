@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
-const Item = ({ name, cost, value, numOwned, handlerOfBuys }) => {
+const Item = ({ index, name, cost, value, numOwned, handlerOfBuys }) => {
 
+const focus = useRef()
 
+useEffect(() => {
+  
+  if (index === 0) {
+    
+    focus.current.focus();
+  }
+}, []);
 
   return (
-    <Container onClick={handlerOfBuys}>
+    <Container ref={focus} onClick={handlerOfBuys}>
       <StyledItem>{name}</StyledItem>
       <div>
         Cost: {cost} Cookies. Produces {value} cookies/sec
@@ -14,12 +22,10 @@ const Item = ({ name, cost, value, numOwned, handlerOfBuys }) => {
       <div>owned:{numOwned}</div>
     </Container>
   );
-
-  
 };
 
 
-const Container = styled.div`
+const Container = styled.button`
 
 `
 const  StyledItem = styled.div `

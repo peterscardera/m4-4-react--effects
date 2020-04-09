@@ -18,33 +18,39 @@ const Game = () => {
     grandma: 0,
     farm: 0
   });
-  const handleSpace = () => {
-     setNumCookies(numCookies);
-  };
+const handleSpace = (e) => {
+if (e.code === "Space") {
 
-  React.useEffect(() => {
-    document.title = `${numCookies} cookies`;
+  setNumCookies(numCookies+1)
+}
 
-    return () => {
-      document.title = `cookies`;
-    };
-  }, [numCookies]);
+}
 
-  React.useEffect(() => {
-    window.addEventListener("Space", handleSpace);
+React.useEffect(()=> {
+document.title = `${numCookies} cookies`;
 
-    return () => {
-      window.removeEventListener("Space", handleSpace);
-    };
-  });
+return () => {
+  document.title = `cookies`
+}
+},[numCookies])
+
+
+React.useEffect(()=> {
+  window.addEventListener('keydown', handleSpace)
+
+return () => {
+  window.removeEventListener('keydown', handleSpace)
+}
+
+})
   const calculateCookiesPerTick = purchasedItems => {
     //console.log(purchasedItems);
 
     let cookieFactory = 0;
 
     items.forEach(item => {
-      cookieFactory += purchasedItems[item.id] * item.value;
-    });
+    cookieFactory += purchasedItems[item.id] * item.value
+    });             
 
     return cookieFactory;
   };
@@ -67,11 +73,9 @@ const Game = () => {
           <strong>{calculateCookiesPerTick(purchasedItems)}</strong> cookies per
           second
         </Indicator>
-        <Button
-          onClick={() => {
-            setNumCookies(numCookies + 100);
-          }}
-        >
+        <Button onClick={()=> {
+          setNumCookies(numCookies+1)
+        }}>
           <Cookie src={cookieSrc} />
         </Button>
       </GameArea>
@@ -81,7 +85,8 @@ const Game = () => {
         {items.map((eachItem, i) => {
           return (
             <Item
-              key={i}
+
+              index={i}
               name={eachItem.name}
               cost={eachItem.cost}
               value={eachItem.value}
